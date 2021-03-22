@@ -111,6 +111,20 @@ public class Database implements AutoCloseable {
         throw new IllegalStateException("Database is closed");
     }
 
+    public void transactRead(Transact transact) {
+        try (Transaction tx = new Transaction(this, true)) {
+            transact.run(tx);
+            tx.commit();
+        }
+    }
+
+    public void transactWrite(Transact transact) {
+        try (Transaction tx = new Transaction(this, false)) {
+            transact.run(tx);
+            tx.commit();
+        }
+    }
+
     @Override
     public void close() throws Exception {
         closed.set(true);

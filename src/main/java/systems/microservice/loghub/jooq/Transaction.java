@@ -17,8 +17,6 @@
 
 package systems.microservice.loghub.jooq;
 
-import org.jooq.SQLDialect;
-import org.jooq.conf.Settings;
 import org.jooq.impl.DefaultDSLContext;
 
 import java.sql.Connection;
@@ -42,11 +40,7 @@ public class Transaction extends DefaultDSLContext implements AutoCloseable {
     protected boolean committed;
     protected boolean closed;
 
-    public Transaction(Database database) {
-        this(database, true);
-    }
-
-    public Transaction(Database database, boolean readOnly) {
+    protected Transaction(Database database, boolean readOnly) {
         this(new Init(database, database.acquire(readOnly)));
     }
 
@@ -117,7 +111,7 @@ public class Transaction extends DefaultDSLContext implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         if (!closed) {
             try {
                 if (!committed) {
