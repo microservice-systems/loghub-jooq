@@ -112,16 +112,22 @@ public class Database implements AutoCloseable {
     }
 
     public void transactRead(Transact transact) {
-        try (Transaction tx = new Transaction(this, true)) {
+        Transaction tx = new Transaction(this, true);
+        try {
             transact.run(tx);
             tx.commit();
+        } finally {
+            tx.close();
         }
     }
 
     public void transactWrite(Transact transact) {
-        try (Transaction tx = new Transaction(this, false)) {
+        Transaction tx = new Transaction(this, false);
+        try {
             transact.run(tx);
             tx.commit();
+        } finally {
+            tx.close();
         }
     }
 

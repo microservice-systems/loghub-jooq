@@ -28,7 +28,7 @@ import java.util.Map;
  * @author Dmitry Kotlyarov
  * @since 1.0
  */
-public class Transaction extends DefaultDSLContext implements AutoCloseable {
+public class Transaction extends DefaultDSLContext {
     private static final long serialVersionUID = 1L;
 
     protected final transient Database database;
@@ -37,8 +37,6 @@ public class Transaction extends DefaultDSLContext implements AutoCloseable {
     protected final transient Map<String, Object> context;
     protected final long begin;
     protected long end;
-    protected boolean committed;
-    protected boolean closed;
 
     protected Transaction(Database database, boolean readOnly) {
         this(new Init(database, database.acquire(readOnly)));
@@ -53,8 +51,6 @@ public class Transaction extends DefaultDSLContext implements AutoCloseable {
         this.context = new LinkedHashMap<>(16);
         this.begin = System.currentTimeMillis();
         this.end = -1;
-        this.committed = false;
-        this.closed = false;
     }
 
     public Database getDatabase() {
@@ -77,6 +73,16 @@ public class Transaction extends DefaultDSLContext implements AutoCloseable {
         return context;
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> T get(String key, Class<T> clazz) {
+        return (T) context.get(key);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T put(String key, T object) {
+        return (T) context.put(key, object);
+    }
+
     public long getBegin() {
         return begin;
     }
@@ -85,47 +91,25 @@ public class Transaction extends DefaultDSLContext implements AutoCloseable {
         return end;
     }
 
-    public boolean isCommitted() {
-        return committed;
-    }
-
-    public boolean isClosed() {
-        return closed;
-    }
-
     public void commit() {
-        if (!closed) {
-            if (!committed) {
-                try {
-                    connection.commit();
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-                committed = true;
-            } else {
-                throw new IllegalStateException("Transaction is committed");
-            }
-        } else {
-            throw new IllegalStateException("Transaction is closed");
+        try {
+            connection.commit();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    @Override
-    public void close() {
-        if (!closed) {
-            try {
-                if (!committed) {
-                    try {
-                        connection.rollback();
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            } finally {
-                connector.release();
-                closed = true;
-            }
+    public void rollback() {
+        try {
+            connection.rollback();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
+    }
+
+    protected void close() {
+        end = System.currentTimeMillis();
+        connector.release();
     }
 
     protected static class Init {

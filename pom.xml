@@ -24,9 +24,9 @@
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>LogHub jOOQ Library</name>
-    <description>Contains Java classes for extension of jOOQ Library</description>
-    <url>https://loghub.net/lib/jooq</url>
+    <name>LogHub jOOQ</name>
+    <description>Contains Java classes for extension of jOOQ</description>
+    <url>https://loghub.net/common/jooq</url>
     <scm>
         <url>https://gitlab.com/micsys/loghub/common/loghub-jooq.git</url>
     </scm>

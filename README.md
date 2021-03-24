@@ -1,3 +1,3 @@
 # loghub-jooq
 
-LogHub jOOQ Library
+LogHub jOOQ
